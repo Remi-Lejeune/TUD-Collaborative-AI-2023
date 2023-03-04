@@ -92,7 +92,7 @@ class TrustActionAgent(ArtificialBrain):
         # Initialize and update trust beliefs for team members
         trustBeliefs = self._loadBelief(self._teamMembers, self._folder)
         self._trustBelief(self._teamMembers, trustBeliefs, self._folder, self._receivedMessages)
-
+        print(self._trustCalc(trustBeliefs))
         # Check whether human is close in distance
         if state[{'is_human_agent': True}]:
             self._distanceHuman = 'close'
@@ -789,12 +789,12 @@ class TrustActionAgent(ArtificialBrain):
         Baseline implementation of a trust belief. Creates a dictionary with trust belief scores for each team member, for example based on the received messages.
         '''
         # Update the trust value based on for example the received messages
-        for message in receivedMessages:
+        ##for message in receivedMessages:
             # Increase agent trust in a team member that rescued a victim
-            if 'Collect' in message:
-                trustBeliefs[self._humanName]['competence']+=0.10
+            ##if 'Collect' in message:
+                ##trustBeliefs[self._humanName]['competence']+=0.10
                 # Restrict the competence belief to a range of -1 to 1
-                trustBeliefs[self._humanName]['competence'] = np.clip(trustBeliefs[self._humanName]['competence'], -1, 1)
+                ##trustBeliefs[self._humanName]['competence'] = np.clip(trustBeliefs[self._humanName]['competence'], -1, 1)
         # Save current trust belief values so we can later use and retrieve them to add to a csv file with all the logged trust belief values
         with open(folder + '/beliefs/currentTrustBelief.csv', mode='w') as csv_file:
             csv_writer = csv.writer(csv_file, delimiter=';', quotechar='"', quoting=csv.QUOTE_MINIMAL)
@@ -803,6 +803,8 @@ class TrustActionAgent(ArtificialBrain):
 
         return trustBeliefs
 
+    def _trustCalc(self, trustBeliefs):
+        return trustBeliefs[self._humanName]['competence'] + trustBeliefs[self._humanName]['willingness']
     def _sendMessage(self, mssg, sender):
         '''
         send messages from agent to other team members
