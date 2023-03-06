@@ -64,3 +64,38 @@ else => Take victim
 ### Take victim:
 If human interrupts => **Find next goal**
 Else **Plan path to victim => Follow path to droppoint => drop victim => find next**
+
+## Other
+
+### Process message (_processMessages)
+
+This function is made to process messages from the human.
+We could add our trust factor here instead of the main loop.
+
+if received "search" 
+    add room to list of room searched
+
+if received "found" 
+    add victim to found victim
+    add room to list of room searched
+    if human weak help them
+    else add to "to do list"
+
+if received "Collect"
+    add victim to list of rescued victim
+    add room to list of room searched
+    if human weak help them
+
+if received "Remove"
+    agent comes to help remove the obstacle
+    
+
+### Send message (_sendMessage)
+This is the function from which the agent sends message. It could be modified for debug purposes.
+
+### Trust Belief
+This function is where we need to implement the logic to compute the trust and eagerness.
+Right now it adds + 0.1 of trust when a victim is rescued.
+
+### Load Belief
+This function is made load our "belief" (right now it only the trust value)
