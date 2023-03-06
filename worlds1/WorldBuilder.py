@@ -81,15 +81,12 @@ def add_agents(builder, condition, task_type, name, folder):
         # Add the artificial agents based on condition
         nr_agents = agents_per_team - human_agents_per_team
         for agent_nr in range(nr_agents):
-            loc = (0,0)
             if task_type=="official":
                 brain = TrustActionAgent(slowdown=8, condition=condition, name=name, folder=folder) # Slowdown makes the agent a bit slower, do not change value during evaluations
                 loc = (22,11)
             if task_type=="tutorial":
                 brain = TutorialAgent(slowdown=8, condition=condition, name=name, folder=folder)
                 loc = (16,8)
-            if loc == (0, 0):
-                raise ValueError(f'Task type did not match expected: {task_type}!')
             builder.add_agent(loc, brain, team=team_name, name="RescueBot",customizable_properties = ['score'], score=0, sense_capability=sense_capability_agent, is_traversable=True, img_name="/images/robot-final4.svg")
 
         # Add human agents based on condition, do not change human brain values

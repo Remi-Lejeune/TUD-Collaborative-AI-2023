@@ -1,5 +1,6 @@
+__pycache__
 .venve
 .idea
-.pyc
+*.pyc
 logs
 */__pycache__/
