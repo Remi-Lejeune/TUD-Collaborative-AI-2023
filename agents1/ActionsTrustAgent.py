@@ -92,7 +92,6 @@ class TrustActionAgent(ArtificialBrain):
         # Initialize and update trust beliefs for team members
         trustBeliefs = self._loadBelief(self._teamMembers, self._folder)
         self._trustBelief(self._teamMembers, trustBeliefs, self._folder, self._receivedMessages)
-        print(self._trustCalc(trustBeliefs))
         # Check whether human is close in distance
         if state[{'is_human_agent': True}]:
             self._distanceHuman = 'close'
