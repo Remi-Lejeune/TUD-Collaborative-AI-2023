@@ -87,11 +87,14 @@ class TrustActionAgent(ArtificialBrain):
             for member in self._teamMembers:
                 if mssg.from_id == member and mssg.content not in self._receivedMessages:
                     self._receivedMessages.append(mssg.content)
-        # Process messages from team members
-        self._processMessages(state, self._teamMembers, self._condition)
+
         # Initialize and update trust beliefs for team members
         trustBeliefs = self._loadBelief(self._teamMembers, self._folder)
         self._trustBelief(self._teamMembers, trustBeliefs, self._folder, self._receivedMessages)
+        trust = self._trustCalc(self._trustBelief())
+        # Process messages from team members
+        self._processMessages(state, self._teamMembers, self._condition, trust=trust)
+
         # Check whether human is close in distance
         if state[{'is_human_agent': True}]:
             self._distanceHuman = 'close'
@@ -661,7 +664,7 @@ class TrustActionAgent(ArtificialBrain):
                 zones.append(place)
         return zones
 
-    def _processMessages(self, state, teamMembers, condition):
+    def _processMessages(self, state, teamMembers, condition, trust):
         '''
         process incoming messages received from the team members
         '''
@@ -678,12 +681,12 @@ class TrustActionAgent(ArtificialBrain):
         for mssgs in receivedMessages.values():
             for msg in mssgs:
                 # If a received message involves team members searching areas, add these areas to the memory of areas that have been explored
-                if msg.startswith("Search:"):
+                if msg.startswith("Search:") and trust > 0:
                     area = 'area ' + msg.split()[-1]
                     if area not in self._searchedRooms:
                         self._searchedRooms.append(area)
                 # If a received message involves team members finding victims, add these victims and their locations to memory
-                if msg.startswith("Found:"):
+                if msg.startswith("Found:") and trust > -0.5:
                     # Identify which victim and area it concerns
                     if len(msg.split()) == 6:
                         foundVic = ' '.join(msg.split()[1:4])
@@ -706,7 +709,7 @@ class TrustActionAgent(ArtificialBrain):
                     if 'mild' in foundVic and condition!='weak':
                         self._todo.append(foundVic)
                 # If a received message involves team members rescuing victims, add these victims and their locations to memory
-                if msg.startswith('Collect:'):
+                if msg.startswith('Collect:') and trust > -0.75:
                     # Identify which victim and area it concerns
                     if len(msg.split()) == 6:
                         collectVic = ' '.join(msg.split()[1:4])
@@ -729,7 +732,7 @@ class TrustActionAgent(ArtificialBrain):
                     if condition=='weak':
                         self._rescue = 'together'
                 # If a received message involves team members asking for help with removing obstacles, add their location to memory and come over
-                if msg.startswith('Remove:'):
+                if msg.startswith('Remove:') and trust > 0:
                     # Come over immediately when the agent is not carrying a victim
                     if not self._carrying:
                         # Identify at which location the human needs help

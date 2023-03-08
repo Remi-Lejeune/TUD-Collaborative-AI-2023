@@ -15,6 +15,9 @@ The mildly injured and the simple obstacles will be acted on
 Human will no longer override the contols.
 This is for low trust (-0.5 and lower)
 
+### Trust Impact on Message Interpreation
+Trust Belief is used to 
+
 
 ### No Trust
 Human does not override current objective
