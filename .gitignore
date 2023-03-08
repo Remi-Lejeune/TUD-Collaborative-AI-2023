@@ -1,0 +1,6 @@
+__pycache__
+.venve
+.idea
+*.pyc
+logs
+*/__pycache__/
