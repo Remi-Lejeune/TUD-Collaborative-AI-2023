@@ -347,7 +347,9 @@ class HumanBrain(HumanAgentBrain):
                 for water in state[{"name": "water"}]:
                     if water['location'] not in water_locs:
                         water_locs.append(water['location'])
-            if state[{"name": self.__name}]['location'] in water_locs and state[{"name": self.__name}]['location'] not in [(3,5),(9,5),(15,5),(21,5),(3,6),(9,6),(15,6),(3,17),(9,17),(15,17),(3,18),(9,18),(15,18),(21,18)]:
+            name = [state[block] for block in state  if'is_human_agent' in state[block] and state[block]['is_human_agent']][0]['name']
+            if state[name]['location'] in water_locs \
+                    and state[name]['location'] not in [(3,5),(9,5),(15,5),(21,5),(3,6),(9,6),(15,6),(3,17),(9,17),(15,17),(3,18),(9,18),(15,18),(21,18)]:
                 action == Idle.__name__
                 action_kwargs['duration_in_ticks'] = 5
 
