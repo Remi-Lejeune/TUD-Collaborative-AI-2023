@@ -10,7 +10,7 @@ from actions1.CustomActions import *
 from actions1.CustomActions import CarryObject, Drop
 from brains1.ArtificialBrain import ArtificialBrain
 
-
+CUT_OFF_TRUST_POINT = 0;
 class Phase(enum.Enum):
     INTRO = 1,
     FIND_NEXT_GOAL = 2,
@@ -91,9 +91,8 @@ class TrustActionAgent(ArtificialBrain):
         # Initialize and update trust beliefs for team members
         trustBeliefs = self._loadBelief(self._teamMembers, self._folder)
         self._trustBelief(self._teamMembers, trustBeliefs, self._folder, self._receivedMessages)
-        trust = self._trustCalc(self._trustBelief())
         # Process messages from team members
-        self._processMessages(state, self._teamMembers, self._condition, trust=trust)
+        self._processMessages(state, self._teamMembers, self._condition, trust=trustBeliefs[self._humanName]['competence'])
 
         # Check whether human is close in distance
         if state[{'is_human_agent': True}]:
@@ -484,11 +483,22 @@ class TrustActionAgent(ArtificialBrain):
                                 self._foundVictimLocs[vic] = {'location': info['location'],'room': self._door['room_name'], 'obj_id': info['obj_id']}
                                 # Communicate which victim the agent found and ask the human whether to rescue the victim now or at a later stage
                                 if 'mild' in vic and self._answered == False and not self._waiting:
-                                    self._sendMessage('Found ' + vic + ' in ' + self._door['room_name'] + '. Please decide whether to "Rescue together", "Rescue alone", or "Continue" searching. \n \n \
-                                        Important features to consider are: \n safe - victims rescued: ' + str(self._collectedVictims) + '\n explore - areas searched: area ' + str(self._searchedRooms).replace('area ','') + '\n \
-                                        clock - extra time when rescuing alone: 15 seconds \n afstand - distance between us: ' + self._distanceHuman,'RescueBot')
-                                    self._waiting = True
-                                        
+                                    if trustBeliefs[self._humanName]['competence'] >= CUT_OFF_TRUST_POINT:
+                                        self._sendMessage('Found ' + vic + ' in ' + self._door['room_name'] + '. Please decide whether to "Rescue together", "Rescue alone", or "Continue" searching. \n \n \
+                                            Important features to consider are: \n safe - victims rescued: ' + str(self._collectedVictims) + '\n explore - areas searched: area ' + str(self._searchedRooms).replace('area ','') + '\n \
+                                            clock - extra time when rescuing alone: 15 seconds \n afstand - distance between us: ' + self._distanceHuman,'RescueBot')
+                                        self._waiting = True
+                                    #elif trustBeliefs[self._humanName]['willingness'] < CUT_OFF_TRUST_POINT:
+                                    elif trustBeliefs[self._humanName]['competence'] < CUT_OFF_TRUST_POINT:
+                                        self._sendMessage(
+                                            'Picking up ' + self._recentVic + ' in ' + self._door['room_name'] + '.',
+                                            'RescueBot')
+                                        self._rescue = 'alone'
+                                        self._answered = True
+                                        self._waiting = False
+                                        self._recentVic = None
+                                        self._phase = Phase.FIND_NEXT_GOAL
+
                                 if 'critical' in vic and self._answered == False and not self._waiting:
                                     self._sendMessage('Found ' + vic + ' in ' + self._door['room_name'] + '. Please decide whether to "Rescue" or "Continue" searching. \n\n \
                                         Important features to consider are: \n explore - areas searched: area ' + str(self._searchedRooms).replace('area','') + ' \n safe - victims rescued: ' + str(self._collectedVictims) + '\n \
