@@ -72,6 +72,8 @@ class BaselineAgent(ArtificialBrain):
         self._moving = False
         self.trust = 0.1
         self.willingness = 0.1
+        self.lied = False
+        self.trustBeliefValues = self._loadBelief(self._teamMembers, self._folder)
 
     def initialize(self):
         # Initialization of the state tracker and navigation algorithm
@@ -96,8 +98,7 @@ class BaselineAgent(ArtificialBrain):
         # Process messages from team members
         self._processMessages(state, self._teamMembers, self._condition)
         # Initialize and update trust beliefs for team members
-        trustBeliefs = self._loadBelief(self._teamMembers, self._folder)
-        self._trustBelief(self._teamMembers, trustBeliefs, self._folder, self._receivedMessages)
+        self._trustBelief(self._teamMembers, self.trustBeliefValues, self._folder, self._receivedMessages)
 
         # Check whether human is close in distance
         if state[{'is_human_agent': True}]:
@@ -173,6 +174,17 @@ class BaselineAgent(ArtificialBrain):
                     self._remaining = remaining
                 # Remain idle if there are no victims left to rescue
                 if not remainingZones:
+                    print("FINITO")
+                    #TODO Update the trust value based on for example the received messages
+                    if not self.lied:
+                        for message in self._receivedMessages:
+                            # Increase agent trust in a team member that rescued a victim
+                            if 'Collect' or 'Found' or 'Search' in message:
+                                self.trustBeliefValues[self._humanName]['willingness'] += self.willingness
+                                # Restrict the competence belief to a range of -1 to 1
+                                self.trustBeliefValues[self._humanName]['competence'] = np.clip(
+                                    self.trustBeliefValues[self._humanName]['competence'], -1, 1)
+                    self._trustBelief(self._teamMembers, self.trustBeliefValues, self._folder, self._receivedMessages)
                     return None, {}
 
                 # Check which victims can be rescued next because human or agent already found them             
@@ -224,6 +236,10 @@ class BaselineAgent(ArtificialBrain):
                                    and room['room_name'] not in self._tosearch]
                 # If all areas have been searched but the task is not finished, start searching areas again
                 if self._remainingZones and len(unsearchedRooms) == 0:
+                    self.lied = True
+                    # TODO lower trust based on the number of people not found and remove eagerness reward.
+                    self.trustBeliefValues[self._humanName]['competence'] = -1
+                    print(self.trustBeliefValues)
                     self._tosearch = []
                     self._searchedRooms = []
                     self._sendMessages = []
@@ -690,6 +706,7 @@ class BaselineAgent(ArtificialBrain):
                 if msg.startswith("Search:"):
                     area = 'area ' + msg.split()[-1]
                     if area not in self._searchedRooms:
+                        #TODO add search reward here
                         self._searchedRooms.append(area)
                 # If a received message involves team members finding victims, add these victims and their locations to memory
                 if msg.startswith("Found:"):
@@ -801,13 +818,7 @@ class BaselineAgent(ArtificialBrain):
         '''
         Baseline implementation of a trust belief. Creates a dictionary with trust belief scores for each team member, for example based on the received messages.
         '''
-        # Update the trust value based on for example the received messages
-        for message in receivedMessages:
-            # Increase agent trust in a team member that rescued a victim
-            if 'Collect' or 'Found' or 'Search' in message:
-                trustBeliefs[self._humanName]['willingness']+= self.willingness
-                # Restrict the competence belief to a range of -1 to 1
-                trustBeliefs[self._humanName]['competence'] = np.clip(trustBeliefs[self._humanName]['competence'], -1, 1)
+
         # Save current trust belief values so we can later use and retrieve them to add to a csv file with all the logged trust belief values
         with open(folder + '/beliefs/currentTrustBelief.csv', mode='w') as csv_file:
             csv_writer = csv.writer(csv_file, delimiter=';', quotechar='"', quoting=csv.QUOTE_MINIMAL)
