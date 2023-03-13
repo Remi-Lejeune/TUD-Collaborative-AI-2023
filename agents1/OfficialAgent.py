@@ -70,6 +70,8 @@ class BaselineAgent(ArtificialBrain):
         self._recentVic = None
         self._receivedMessages = []
         self._moving = False
+        self.trust = 0.1
+        self.willingness = 0.1
 
     def initialize(self):
         # Initialization of the state tracker and navigation algorithm
@@ -668,7 +670,7 @@ class BaselineAgent(ArtificialBrain):
                 zones.append(place)
         return zones
 
-    def _processMessages(self, state, teamMembers, condition):
+    def _processMessages(self, state: object, teamMembers: object, condition: object) -> object:
         '''
         process incoming messages received from the team members
         '''
@@ -802,8 +804,8 @@ class BaselineAgent(ArtificialBrain):
         # Update the trust value based on for example the received messages
         for message in receivedMessages:
             # Increase agent trust in a team member that rescued a victim
-            if 'Collect' in message:
-                trustBeliefs[self._humanName]['competence']+=0.10
+            if 'Collect' or 'Found' or 'Search' in message:
+                trustBeliefs[self._humanName]['willingness']+= self.willingness
                 # Restrict the competence belief to a range of -1 to 1
                 trustBeliefs[self._humanName]['competence'] = np.clip(trustBeliefs[self._humanName]['competence'], -1, 1)
         # Save current trust belief values so we can later use and retrieve them to add to a csv file with all the logged trust belief values
