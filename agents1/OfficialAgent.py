@@ -229,7 +229,7 @@ class BaselineAgent(ArtificialBrain):
                 if self._remainingZones and len(unsearchedRooms) == 0:
                     self.lied = True
                     # TODO lower trust based on the number of people not found and remove eagerness reward.
-                    self.trustBeliefValues[self._humanName]['competence'] = -1
+                    self.trustBeliefValues[self._humanName]['competence'] -= self.trust
                     self.trustBeliefValues[self._humanName]['willingness'] -= self.eagerness_remove
                     print(self.trustBeliefValues)
                     self._tosearch = []
@@ -484,6 +484,10 @@ class BaselineAgent(ArtificialBrain):
                                 if vic == self._goalVic:
                                     # Communicate which victim was found
                                     self._sendMessage('Found ' + vic + ' in ' + self._door['room_name'] + ' because you told me ' + vic + ' was located here.','RescueBot')
+
+                                    self.trustBeliefValues[self._humanName]['competence'] += self.trust
+                                    self.trustBeliefValues[self._humanName]['willingness'] += self.trust
+
                                     # Add the area to the list with searched areas
                                     if self._door['room_name'] not in self._searchedRooms:
                                         self._searchedRooms.append(self._door['room_name'])
@@ -515,12 +519,16 @@ class BaselineAgent(ArtificialBrain):
                 if self._goalVic in self._foundVictims and self._goalVic not in self._roomVics and self._foundVictimLocs[self._goalVic]['room'] == self._door['room_name']:
                     self._sendMessage(self._goalVic + ' not present in ' + str(self._door['room_name']) + ' because I searched the whole area without finding ' + self._goalVic + '.','RescueBot')
                     # Remove the victim location from memory
+                    #TODO reduce trust
+                    self.trustBeliefValues[self._humanName]['competence'] -= self.trust
                     self._foundVictimLocs.pop(self._goalVic, None)
                     self._foundVictims.remove(self._goalVic)
                     self._roomVics = []
                     # Reset received messages (bug fix)
                     self.received_messages = []
                     self.received_messages_content = []
+
+
                 # Add the area to the list of searched areas
                 if self._door['room_name'] not in self._searchedRooms:
                     self._searchedRooms.append(self._door['room_name'])
@@ -719,6 +727,7 @@ class BaselineAgent(ArtificialBrain):
                     # Add the victim and its location to memory
                     if foundVic not in self._foundVictims:
                         self._foundVictims.append(foundVic)
+                        #TODO maybe dont add eagerness if red victim since it is added later if they re not lying
                         self.eagerness_remove += self.willingness
                         self.trustBeliefValues[self._humanName]['willingness'] += self.willingness
 
