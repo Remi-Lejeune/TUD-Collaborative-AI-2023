@@ -650,8 +650,8 @@ class BaselineAgent(ArtificialBrain):
                             self.trustBeliefValues[self._humanName]['competence'] += (self.trust * 2)
                 # Add the victim to the list of rescued victims when it has been picked up
                 if len(objects) == 0 and 'critical' in self._goalVic or len(objects) == 0 and 'mild' in self._goalVic and self._rescue=='together':
-                    # Emma: here the human and bot rescued the mild victim together, so both values go up
-                    print("adding trust and eagerness for rescuing a mild victim")
+                    # Emma: here the human and bot rescued the mild/critical victim together, so both values go up
+                    print("adding trust and eagerness for rescuing a mild/critical victim")
                     self.trustBeliefValues[self._humanName]['willingness'] += self.willingness
                     self.trustBeliefValues[self._humanName]['competence'] += self.trust
 
