@@ -74,6 +74,7 @@ class BaselineAgent(ArtificialBrain):
         self.willingness = 0.1
         self.lied = False
         self.trustBeliefValues = self._loadBelief(self._teamMembers, self._folder)
+        self.eagerness_remove = 0
 
     def initialize(self):
         # Initialization of the state tracker and navigation algorithm
@@ -97,6 +98,7 @@ class BaselineAgent(ArtificialBrain):
                     self._receivedMessages.append(mssg.content)
         # Process messages from team members
         self._processMessages(state, self._teamMembers, self._condition)
+
         # Initialize and update trust beliefs for team members
         self._trustBelief(self._teamMembers, self.trustBeliefValues, self._folder, self._receivedMessages)
 
@@ -174,17 +176,6 @@ class BaselineAgent(ArtificialBrain):
                     self._remaining = remaining
                 # Remain idle if there are no victims left to rescue
                 if not remainingZones:
-                    print("FINITO")
-                    #TODO Update the trust value based on for example the received messages
-                    if not self.lied:
-                        for message in self._receivedMessages:
-                            # Increase agent trust in a team member that rescued a victim
-                            if 'Collect' or 'Found' or 'Search' in message:
-                                self.trustBeliefValues[self._humanName]['willingness'] += self.willingness
-                                # Restrict the competence belief to a range of -1 to 1
-                                self.trustBeliefValues[self._humanName]['competence'] = np.clip(
-                                    self.trustBeliefValues[self._humanName]['competence'], -1, 1)
-                    self._trustBelief(self._teamMembers, self.trustBeliefValues, self._folder, self._receivedMessages)
                     return None, {}
 
                 # Check which victims can be rescued next because human or agent already found them             
@@ -239,6 +230,7 @@ class BaselineAgent(ArtificialBrain):
                     self.lied = True
                     # TODO lower trust based on the number of people not found and remove eagerness reward.
                     self.trustBeliefValues[self._humanName]['competence'] = -1
+                    self.trustBeliefValues[self._humanName]['willingness'] -= self.eagerness_remove
                     print(self.trustBeliefValues)
                     self._tosearch = []
                     self._searchedRooms = []
@@ -699,6 +691,7 @@ class BaselineAgent(ArtificialBrain):
             for member in teamMembers:
                 if mssg.from_id == member:
                     receivedMessages[member].append(mssg.content)
+
         # Check the content of the received messages
         for mssgs in receivedMessages.values():
             for msg in mssgs:
@@ -708,6 +701,8 @@ class BaselineAgent(ArtificialBrain):
                     if area not in self._searchedRooms:
                         #TODO add search reward here
                         self._searchedRooms.append(area)
+                        self.eagerness_remove += self.willingness
+                        self.trustBeliefValues[self._humanName]['willingness'] += self.willingness
                 # If a received message involves team members finding victims, add these victims and their locations to memory
                 if msg.startswith("Found:"):
                     # Identify which victim and area it concerns
@@ -719,9 +714,14 @@ class BaselineAgent(ArtificialBrain):
                     # Add the area to the memory of searched areas
                     if loc not in self._searchedRooms:
                         self._searchedRooms.append(loc)
+                        self.eagerness_remove += self.willingness
+                        self.trustBeliefValues[self._humanName]['willingness'] += self.willingness
                     # Add the victim and its location to memory
                     if foundVic not in self._foundVictims:
                         self._foundVictims.append(foundVic)
+                        self.eagerness_remove += self.willingness
+                        self.trustBeliefValues[self._humanName]['willingness'] += self.willingness
+
                         self._foundVictimLocs[foundVic] = {'room': loc}
                     if foundVic in self._foundVictims and self._foundVictimLocs[foundVic]['room'] != loc:
                         self._foundVictimLocs[foundVic] = {'room': loc}
@@ -742,15 +742,24 @@ class BaselineAgent(ArtificialBrain):
                     # Add the area to the memory of searched areas
                     if loc not in self._searchedRooms:
                         self._searchedRooms.append(loc)
+                        self.eagerness_remove += self.willingness
+                        self.trustBeliefValues[self._humanName]['willingness'] += self.willingness
+
                     # Add the victim and location to the memory of found victims
                     if collectVic not in self._foundVictims:
                         self._foundVictims.append(collectVic)
+                        self.eagerness_remove += self.willingness
+                        self.trustBeliefValues[self._humanName]['willingness'] += self.willingness
+
                         self._foundVictimLocs[collectVic] = {'room': loc}
                     if collectVic in self._foundVictims and self._foundVictimLocs[collectVic]['room'] != loc:
                         self._foundVictimLocs[collectVic] = {'room': loc}
                     # Add the victim to the memory of rescued victims when the human's condition is not weak
                     if condition!='weak' and collectVic not in self._collectedVictims:
                         self._collectedVictims.append(collectVic)
+                        self.eagerness_remove += self.willingness
+                        self.trustBeliefValues[self._humanName]['willingness'] += self.willingness
+
                     # Decide to help the human carry the victim together when the human's condition is weak
                     if condition=='weak':
                         self._rescue = 'together'
