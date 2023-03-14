@@ -485,8 +485,9 @@ class BaselineAgent(ArtificialBrain):
                                     # Communicate which victim was found
                                     self._sendMessage('Found ' + vic + ' in ' + self._door['room_name'] + ' because you told me ' + vic + ' was located here.','RescueBot')
 
+                                    print("adding trust and eagerness for critical victim")
                                     self.trustBeliefValues[self._humanName]['competence'] += self.trust
-                                    self.trustBeliefValues[self._humanName]['willingness'] += self.trust
+                                    self.trustBeliefValues[self._humanName]['willingness'] += self.willingness * 2
 
                                     # Add the area to the list with searched areas
                                     if self._door['room_name'] not in self._searchedRooms:
@@ -722,14 +723,18 @@ class BaselineAgent(ArtificialBrain):
                     # Add the area to the memory of searched areas
                     if loc not in self._searchedRooms:
                         self._searchedRooms.append(loc)
-                        self.eagerness_remove += self.willingness
-                        self.trustBeliefValues[self._humanName]['willingness'] += self.willingness
+                        if 'mild' in foundVic:
+                            print("adding eagerness for mild victim for search room")
+                            self.eagerness_remove += self.willingness
+                            self.trustBeliefValues[self._humanName]['willingness'] += self.willingness
                     # Add the victim and its location to memory
                     if foundVic not in self._foundVictims:
                         self._foundVictims.append(foundVic)
                         #TODO maybe dont add eagerness if red victim since it is added later if they re not lying
-                        self.eagerness_remove += self.willingness
-                        self.trustBeliefValues[self._humanName]['willingness'] += self.willingness
+                        if 'mild' in foundVic:
+                            print("adding eagerness for mild victim")
+                            self.eagerness_remove += self.willingness
+                            self.trustBeliefValues[self._humanName]['willingness'] += self.willingness
 
                         self._foundVictimLocs[foundVic] = {'room': loc}
                     if foundVic in self._foundVictims and self._foundVictimLocs[foundVic]['room'] != loc:
