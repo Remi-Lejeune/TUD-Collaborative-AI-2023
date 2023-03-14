@@ -75,6 +75,7 @@ class BaselineAgent(ArtificialBrain):
         self.lied = False
         self.trustBeliefValues = self._loadBelief(self._teamMembers, self._folder)
         self.eagerness_remove = 0
+        self.trust_remove = 0
 
     def initialize(self):
         # Initialization of the state tracker and navigation algorithm
@@ -229,8 +230,12 @@ class BaselineAgent(ArtificialBrain):
                 if self._remainingZones and len(unsearchedRooms) == 0:
                     self.lied = True
                     # TODO lower trust based on the number of people not found and remove eagerness reward.
-                    self.trustBeliefValues[self._humanName]['competence'] -= self.trust
+                    self.trustBeliefValues[self._humanName]['competence'] -= self.trust_remove
                     self.trustBeliefValues[self._humanName]['willingness'] -= self.eagerness_remove
+                    #reset remove
+                    self.trust_remove = 0
+                    self.eagerness_remove = 0
+
                     print(self.trustBeliefValues)
                     self._tosearch = []
                     self._searchedRooms = []
@@ -792,14 +797,15 @@ class BaselineAgent(ArtificialBrain):
                         self.eagerness_remove += self.willingness
                         self.trustBeliefValues[self._humanName]['willingness'] += self.willingness
 
+                        self.trust_remove += self.trust
+                        self.trustBeliefValues[self._humanName]['competence'] += self.trust
+
                         self._foundVictimLocs[collectVic] = {'room': loc}
                     if collectVic in self._foundVictims and self._foundVictimLocs[collectVic]['room'] != loc:
                         self._foundVictimLocs[collectVic] = {'room': loc}
                     # Add the victim to the memory of rescued victims when the human's condition is not weak
                     if condition!='weak' and collectVic not in self._collectedVictims:
                         self._collectedVictims.append(collectVic)
-                        self.eagerness_remove += self.willingness
-                        self.trustBeliefValues[self._humanName]['willingness'] += self.willingness
 
                     # Decide to help the human carry the victim together when the human's condition is weak
                     if condition=='weak':
