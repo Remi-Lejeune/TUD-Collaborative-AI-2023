@@ -340,11 +340,10 @@ class TrustActionAgent(ArtificialBrain):
                         objects.append(info)
                         # When the trust is low in either willingness or competence,
                         # remove the stone yourself without asking.
-                        if trustBeliefs[self._humanName]['competence'] < CUT_OFF_TRUST_POINT | \
-                                trustBeliefs[self._humanName]['willingness'] < CUT_OFF_TRUST_POINT:
+                        if trustBeliefs[self._humanName]['competence'] < CUT_OFF_TRUST_POINT or trustBeliefs[self._humanName]['willingness'] < CUT_OFF_TRUST_POINT:
                             self._answered = True
                             self._waiting = False
-                            self._sendMessage('Removing stones blocking ' + str(self._door['room_name']) + '.',
+                            self._sendMessage('Removing tree blocking ' + str(self._door['room_name']) + '.',
                                               'RescueBot')
                             self._phase = Phase.ENTER_ROOM
                             self._remove = False
@@ -383,7 +382,7 @@ class TrustActionAgent(ArtificialBrain):
                         objects.append(info)
                         # When the trust is low in either willingness or competence,
                         # remove the stone yourself without asking.
-                        if trustBeliefs[self._humanName]['competence'] < CUT_OFF_TRUST_POINT | trustBeliefs[self._humanName]['willingness'] < CUT_OFF_TRUST_POINT:
+                        if trustBeliefs[self._humanName]['competence'] < CUT_OFF_TRUST_POINT or trustBeliefs[self._humanName]['willingness'] < CUT_OFF_TRUST_POINT:
                             self._answered = True
                             self._waiting = False
                             self._sendMessage('Removing stones blocking ' + str(self._door['room_name']) + '.',
