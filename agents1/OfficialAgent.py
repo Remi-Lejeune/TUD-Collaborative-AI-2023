@@ -86,6 +86,20 @@ class BaselineAgent(ArtificialBrain):
         # Filtering of the world state before deciding on an action 
         return state
 
+    # this method ensures that the competence will always be in the range of [-1,1]
+    def bound_competence(self):
+        if (self.trustBeliefValues[self._humanName]['competence'] < -1):
+            self.trustBeliefValues[self._humanName]['competence'] = -1
+        if (self.trustBeliefValues[self._humanName]['competence'] > 1):
+            self.trustBeliefValues[self._humanName]['competence'] = 1
+
+    # this method ensures that the willingness will always be in the range of [-1,1]
+    def bound_willingness(self):
+        if (self.trustBeliefValues[self._humanName]['willingness'] < -1):
+            self.trustBeliefValues[self._humanName]['willingness'] = -1
+        if (self.trustBeliefValues[self._humanName]['willingness'] > 1):
+            self.trustBeliefValues[self._humanName]['willingness'] = 1
+
     def decide_on_actions(self, state):
         # Identify team members
         agent_name = state[self.agent_id]['obj_id']
@@ -231,7 +245,9 @@ class BaselineAgent(ArtificialBrain):
                     self.lied = True
                     # TODO lower trust based on the number of people not found and remove eagerness reward.
                     self.trustBeliefValues[self._humanName]['competence'] -= self.trust_remove
+                    self.bound_competence()
                     self.trustBeliefValues[self._humanName]['willingness'] -= self.eagerness_remove
+                    self.bound_willingness()
                     #reset remove
                     self.trust_remove = 0
                     self.eagerness_remove = 0
@@ -343,12 +359,14 @@ class BaselineAgent(ArtificialBrain):
                             # Emma: here the human told the agen to coninue instead of removing the obstacle, so the eagerness is decreasing
                             print("adding trust and eagerness for showing up when helping remove an obstacle")
                             self.trustBeliefValues[self._humanName]['willingness'] -= self.willingness
+                            self.bound_willingness()
 
                         # Wait for the human to help removing the obstacle and remove the obstacle together
                         if self.received_messages_content and self.received_messages_content[-1] == 'Remove' or self._remove:
                             # Emma: here the human told the agen to remove the obstacle, so the eagerness is increasing
                             print("adding trust and eagerness for showing up when helping remove an obstacle")
                             self.trustBeliefValues[self._humanName]['willingness'] += self.willingness
+                            self.bound_willingness()
                             if not self._remove:
                                 self._answered = True
                             # Tell the human to come over and be idle untill human arrives
@@ -360,8 +378,9 @@ class BaselineAgent(ArtificialBrain):
                                 #Emma: here the human showed up for removing a rock, so the eagerness and trust must increase.
                                 print("adding trust and eagerness for showing up when helping remove an obstacle")
                                 self.trustBeliefValues[self._humanName]['willingness'] += self.willingness
+                                self.bound_willingness()
                                 self.trustBeliefValues[self._humanName]['competence'] += (self.trust * 2)
-
+                                self.bound_competence()
                                 self._sendMessage('Lets remove rock blocking ' + str(self._door['room_name']) + '!','RescueBot')
                                 return None, {}
                         # Remain idle untill the human communicates what to do with the identified obstacle 
@@ -434,7 +453,9 @@ class BaselineAgent(ArtificialBrain):
                                 # Emma: here the human showed up for removing a stone, so the eagerness and trust must increase.
                                 print("adding trust and eagerness for showing up when helping remove an obstacle")
                                 self.trustBeliefValues[self._humanName]['willingness'] += self.willingness
+                                self.bound_willingness()
                                 self.trustBeliefValues[self._humanName]['competence'] += (self.trust * 2)
+                                self.bound_competence()
 
                                 self._sendMessage('Lets remove stones blocking ' + str(self._door['room_name']) + '!','RescueBot')
                                 return None, {}
@@ -509,7 +530,9 @@ class BaselineAgent(ArtificialBrain):
 
                                     print("adding trust and eagerness for critical victim")
                                     self.trustBeliefValues[self._humanName]['competence'] += self.trust
+                                    self.bound_competence()
                                     self.trustBeliefValues[self._humanName]['willingness'] += self.willingness * 2
+                                    self.bound_willingness()
 
                                     # Add the area to the list with searched areas
                                     if self._door['room_name'] not in self._searchedRooms:
@@ -543,7 +566,13 @@ class BaselineAgent(ArtificialBrain):
                     self._sendMessage(self._goalVic + ' not present in ' + str(self._door['room_name']) + ' because I searched the whole area without finding ' + self._goalVic + '.','RescueBot')
                     # Remove the victim location from memory
                     #TODO reduce trust
+
                     self.trustBeliefValues[self._humanName]['competence'] -= self.trust
+                    self.bound_competence()
+
+
+
+                    print("current competence: ", self.trustBeliefValues[self._humanName]['competence'])
                     self._foundVictimLocs.pop(self._goalVic, None)
                     self._foundVictims.remove(self._goalVic)
                     self._roomVics = []
@@ -652,13 +681,18 @@ class BaselineAgent(ArtificialBrain):
                             # Emma: here the human showed up for rescueing a victim so the eagerness and trust must increase.
                             print("adding trust and eagerness for showing up when helping remove an obstacle")
                             self.trustBeliefValues[self._humanName]['willingness'] += self.willingness
+                            self.bound_willingness()
                             self.trustBeliefValues[self._humanName]['competence'] += (self.trust * 2)
+                            self.bound_competence()
+
                 # Add the victim to the list of rescued victims when it has been picked up
                 if len(objects) == 0 and 'critical' in self._goalVic or len(objects) == 0 and 'mild' in self._goalVic and self._rescue=='together':
                     # Emma: here the human and bot rescued the mild/critical victim together, so both values go up
                     print("adding trust and eagerness for rescuing a mild/critical victim")
                     self.trustBeliefValues[self._humanName]['willingness'] += self.willingness
+                    self.bound_willingness()
                     self.trustBeliefValues[self._humanName]['competence'] += self.trust
+                    self.bound_competence()
 
                     self._waiting = False
                     if self._goalVic not in self._collectedVictims:
@@ -744,6 +778,7 @@ class BaselineAgent(ArtificialBrain):
                         self._searchedRooms.append(area)
                         self.eagerness_remove += self.willingness
                         self.trustBeliefValues[self._humanName]['willingness'] += self.willingness
+                        self.bound_willingness()
                 # If a received message involves team members finding victims, add these victims and their locations to memory
                 if msg.startswith("Found:"):
                     # Identify which victim and area it concerns
@@ -759,6 +794,7 @@ class BaselineAgent(ArtificialBrain):
                             print("adding eagerness for mild victim for search room")
                             self.eagerness_remove += self.willingness
                             self.trustBeliefValues[self._humanName]['willingness'] += self.willingness
+                            self.bound_willingness()
                     # Add the victim and its location to memory
                     if foundVic not in self._foundVictims:
                         self._foundVictims.append(foundVic)
@@ -767,6 +803,7 @@ class BaselineAgent(ArtificialBrain):
                             print("adding eagerness for mild victim")
                             self.eagerness_remove += self.willingness
                             self.trustBeliefValues[self._humanName]['willingness'] += self.willingness
+                            self.bound_willingness()
 
                         self._foundVictimLocs[foundVic] = {'room': loc}
                     if foundVic in self._foundVictims and self._foundVictimLocs[foundVic]['room'] != loc:
@@ -790,15 +827,18 @@ class BaselineAgent(ArtificialBrain):
                         self._searchedRooms.append(loc)
                         self.eagerness_remove += self.willingness
                         self.trustBeliefValues[self._humanName]['willingness'] += self.willingness
+                        self.bound_willingness()
 
                     # Add the victim and location to the memory of found victims
                     if collectVic not in self._foundVictims:
                         self._foundVictims.append(collectVic)
                         self.eagerness_remove += self.willingness
                         self.trustBeliefValues[self._humanName]['willingness'] += self.willingness
+                        self.bound_willingness()
 
                         self.trust_remove += self.trust
                         self.trustBeliefValues[self._humanName]['competence'] += self.trust
+                        self.bound_competence()
 
                         self._foundVictimLocs[collectVic] = {'room': loc}
                     if collectVic in self._foundVictims and self._foundVictimLocs[collectVic]['room'] != loc:
