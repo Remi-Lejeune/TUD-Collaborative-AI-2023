@@ -15,7 +15,6 @@ from matrx.objects import EnvObject
 from matrx.world_builder import RandomProperty
 from matrx.goals import WorldGoal
 
-from agents1.OfficialAgent import TrustActionAgent
 from agents1.OfficialAgentBaseline import BaselineAgent
 from agents1.TutorialAgent import TutorialAgent
 from actions1.CustomActions import RemoveObjectTogether
@@ -83,7 +82,7 @@ def add_agents(builder, condition, task_type, name, folder):
         for agent_nr in range(nr_agents):
             loc = (0,0)
             if task_type=="official":
-                brain = TrustActionAgent(slowdown=8, condition=condition, name=name, folder=folder) # Slowdown makes the agent a bit slower, do not change value during evaluations
+                brain = BaselineAgent(slowdown=8, condition=condition, name=name, folder=folder) # Slowdown makes the agent a bit slower, do not change value during evaluations
                 loc = (22,11)
             if task_type=="tutorial":
                 brain = TutorialAgent(slowdown=8, condition=condition, name=name, folder=folder)
