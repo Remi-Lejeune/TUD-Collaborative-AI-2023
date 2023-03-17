@@ -156,6 +156,7 @@ class BaselineAgent(ArtificialBrain):
 
         # Ongoing loop untill the task is terminated, using different phases for defining the agent's behavior
         while True:
+
             if Phase.INTRO == self._phase:
                 # Send introduction message
                 self._sendMessage('Hello! My name is RescueBot. Together we will collaborate and try to search and rescue the 8 victims on our right as quickly as possible. \
@@ -357,14 +358,14 @@ class BaselineAgent(ArtificialBrain):
                             self._tosearch.append(self._door['room_name'])
                             self._phase = Phase.FIND_NEXT_GOAL
                             # Emma: here the human told the agen to coninue instead of removing the obstacle, so the eagerness is decreasing
-                            print("adding trust and eagerness for showing up when helping remove an obstacle")
+                            print("here the human told the agen to coninue instead of removing the obstacle, so the eagerness is decreasing")
                             self.trustBeliefValues[self._humanName]['willingness'] -= self.willingness
                             self.bound_willingness()
 
                         # Wait for the human to help removing the obstacle and remove the obstacle together
                         if self.received_messages_content and self.received_messages_content[-1] == 'Remove' or self._remove:
                             # Emma: here the human told the agen to remove the obstacle, so the eagerness is increasing
-                            print("adding trust and eagerness for showing up when helping remove an obstacle")
+                            print("here the human told the agen to remove the obstacle, so the eagerness is increasing")
                             self.trustBeliefValues[self._humanName]['willingness'] += self.willingness
                             self.bound_willingness()
                             if not self._remove:
@@ -376,7 +377,7 @@ class BaselineAgent(ArtificialBrain):
                             # Tell the human to remove the obstacle when he/she arrives
                             if state[{'is_human_agent': True}]:
                                 #Emma: here the human showed up for removing a rock, so the eagerness and trust must increase.
-                                print("adding trust and eagerness for showing up when helping remove an obstacle")
+                                print("here the human showed up for removing a rock, so the eagerness and trust must increase.")
                                 self.trustBeliefValues[self._humanName]['willingness'] += self.willingness
                                 self.bound_willingness()
                                 self.trustBeliefValues[self._humanName]['competence'] += (self.trust * 2)
@@ -451,7 +452,7 @@ class BaselineAgent(ArtificialBrain):
                             # Tell the human to remove the obstacle when he/she arrives
                             if state[{'is_human_agent': True}]:
                                 # Emma: here the human showed up for removing a stone, so the eagerness and trust must increase.
-                                print("adding trust and eagerness for showing up when helping remove an obstacle")
+                                print("here the human showed up for removing a stone, so the eagerness and trust must increase.")
                                 self.trustBeliefValues[self._humanName]['willingness'] += self.willingness
                                 self.bound_willingness()
                                 self.trustBeliefValues[self._humanName]['competence'] += (self.trust * 2)
@@ -679,7 +680,7 @@ class BaselineAgent(ArtificialBrain):
                             return None, {}
                         else:
                             # Emma: here the human showed up for rescueing a victim so the eagerness and trust must increase.
-                            print("adding trust and eagerness for showing up when helping remove an obstacle")
+                            print("here the human showed up for rescueing a victim so the eagerness and trust must increase.")
                             self.trustBeliefValues[self._humanName]['willingness'] += self.willingness
                             self.bound_willingness()
                             self.trustBeliefValues[self._humanName]['competence'] += (self.trust * 2)
