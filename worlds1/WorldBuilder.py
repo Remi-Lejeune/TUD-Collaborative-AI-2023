@@ -15,7 +15,7 @@ from matrx.objects import EnvObject
 from matrx.world_builder import RandomProperty
 from matrx.goals import WorldGoal
 
-from agents1.OfficialAgentBaseline import BaselineAgent
+from agents1.OfficialAgent import BaselineAgent
 from agents1.TutorialAgent import TutorialAgent
 from actions1.CustomActions import RemoveObjectTogether
 from brains1.HumanBrain import HumanBrain
