@@ -108,7 +108,7 @@ class BaselineAgent(ArtificialBrain):
                 if mssg.from_id == member and mssg.content not in self._receivedMessages:
                     self._receivedMessages.append(mssg.content)
         # Process messages from team members
-        self._processMessages(state, self._teamMembers, self._condition)
+        self._processMessages(state, self._teamMembers, self._condition, self.trustBeliefValues)
 
         # Initialize and update trust beliefs for team members
         self._trustBelief(self._teamMembers, self.trustBeliefValues, self._folder, self._receivedMessages)
