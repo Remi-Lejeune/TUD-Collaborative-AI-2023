@@ -372,12 +372,12 @@ class BaselineAgent(ArtificialBrain):
                             # Tell the human to remove the obstacle when he/she arrives
                             if state[{'is_human_agent': True}]:
                                 #Emma: here the human showed up for removing a rock, so the eagerness and trust must increase.
-                                print("here the human showed up for removing a rock, so the eagerness and trust must increase.")
-                                self.trustBeliefValues[self._humanName]['willingness'] += self.willingness
-                                self.bound_willingness()
-                                self.trustBeliefValues[self._humanName]['competence'] += (self.trust * 2)
-                                self.bound_competence()
-                                self._sendMessage('Lets remove rock blocking ' + str(self._door['room_name']) + '!','RescueBot')
+                                # print("here the human showed up for removing a rock, so the eagerness and trust must increase.")
+                                # self.trustBeliefValues[self._humanName]['willingness'] += self.willingness
+                                # self.bound_willingness()
+                                # self.trustBeliefValues[self._humanName]['competence'] += (self.trust * 2)
+                                # self.bound_competence()
+                                # self._sendMessage('Lets remove rock blocking ' + str(self._door['room_name']) + '!','RescueBot')
                                 return None, {}
                         # Remain idle untill the human communicates what to do with the identified obstacle 
                         else:
@@ -447,11 +447,11 @@ class BaselineAgent(ArtificialBrain):
                             # Tell the human to remove the obstacle when he/she arrives
                             if state[{'is_human_agent': True}]:
                                 # Emma: here the human showed up for removing a stone, so the eagerness and trust must increase.
-                                print("here the human showed up for removing a stone, so the eagerness and trust must increase.")
-                                self.trustBeliefValues[self._humanName]['willingness'] += self.willingness
-                                self.bound_willingness()
-                                self.trustBeliefValues[self._humanName]['competence'] += (self.trust * 2)
-                                self.bound_competence()
+                                # print("here the human showed up for removing a stone, so the eagerness and trust must increase.")
+                                # self.trustBeliefValues[self._humanName]['willingness'] += self.willingness
+                                # self.bound_willingness()
+                                # self.trustBeliefValues[self._humanName]['competence'] += (self.trust * 2)
+                                # self.bound_competence()
 
                                 self._sendMessage('Lets remove stones blocking ' + str(self._door['room_name']) + '!','RescueBot')
                                 return None, {}
