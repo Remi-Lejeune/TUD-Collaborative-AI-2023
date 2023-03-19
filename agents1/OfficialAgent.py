@@ -240,9 +240,9 @@ class BaselineAgent(ArtificialBrain):
                 if self._remainingZones and len(unsearchedRooms) == 0:
                     self.lied = True
                     # TODO lower trust based on the number of people not found and remove eagerness reward.
-                    self.trustBeliefValues[self._humanName]['competence'] -= self.trust_remove
+                    self.trustBeliefValues[self._humanName]['competence'] -= self.trust_remove * 2
                     self.bound_competence()
-                    self.trustBeliefValues[self._humanName]['willingness'] -= self.eagerness_remove
+                    self.trustBeliefValues[self._humanName]['willingness'] -= self.eagerness_remove * 2
                     self.bound_willingness()
                     #reset remove
                     self.trust_remove = 0
@@ -354,7 +354,7 @@ class BaselineAgent(ArtificialBrain):
                             self._phase = Phase.FIND_NEXT_GOAL
                             # Emma: here the human told the agen to coninue instead of removing the obstacle, so the eagerness is decreasing
                             print("here the human told the agen to coninue instead of removing the obstacle, so the eagerness is decreasing")
-                            self.trustBeliefValues[self._humanName]['willingness'] -= self.willingness
+                            self.trustBeliefValues[self._humanName]['willingness'] -= self.willingness * 3
                             self.bound_willingness()
 
                         # Wait for the human to help removing the obstacle and remove the obstacle together
@@ -576,7 +576,7 @@ class BaselineAgent(ArtificialBrain):
                     # Remove the victim location from memory
                     #TODO reduce trust
 
-                    self.trustBeliefValues[self._humanName]['competence'] -= self.trust
+                    self.trustBeliefValues[self._humanName]['competence'] -= self.trust * 4
                     self.bound_competence()
 
 
@@ -781,7 +781,7 @@ class BaselineAgent(ArtificialBrain):
         for mssgs in receivedMessages.values():
             for msg in mssgs:
                 # If a received message involves team members searching areas, add these areas to the memory of areas that have been explored
-                if msg.startswith("Search:") and self.trustBeliefValues[self._humanName]['willingness'] > 0:
+                if msg.startswith("Search:") and self.trustBeliefValues[self._humanName]['willingness'] > -0.25:
                     area = 'area ' + msg.split()[-1]
                     if area not in self._searchedRooms:
                         #TODO add search reward here
