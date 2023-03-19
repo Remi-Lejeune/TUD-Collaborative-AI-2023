@@ -781,7 +781,7 @@ class BaselineAgent(ArtificialBrain):
         for mssgs in receivedMessages.values():
             for msg in mssgs:
                 # If a received message involves team members searching areas, add these areas to the memory of areas that have been explored
-                if msg.startswith("Search:") and trust > 0:
+                if msg.startswith("Search:") and self.trustBeliefValues[self._humanName]['willingness'] > 0:
                     area = 'area ' + msg.split()[-1]
                     if area not in self._searchedRooms:
                         #TODO add search reward here
@@ -790,7 +790,7 @@ class BaselineAgent(ArtificialBrain):
                         self.trustBeliefValues[self._humanName]['willingness'] += self.willingness
                         self.bound_willingness()
                 # If a received message involves team members finding victims, add these victims and their locations to memory
-                if msg.startswith("Found:") and trust > -0.5:
+                if msg.startswith("Found:") and self.trustBeliefValues[self._humanName]['willingness'] > -0.5:
                     # Identify which victim and area it concerns
                     if len(msg.split()) == 6:
                         foundVic = ' '.join(msg.split()[1:4])
@@ -825,7 +825,7 @@ class BaselineAgent(ArtificialBrain):
                     if 'mild' in foundVic and condition!='weak':
                         self._todo.append(foundVic)
                 # If a received message involves team members rescuing victims, add these victims and their locations to memory
-                if msg.startswith('Collect:') and trust > -0.75:
+                if msg.startswith('Collect:') and self.trustBeliefValues[self._humanName]['willingness']  > -0.75:
                     # Identify which victim and area it concerns
                     if len(msg.split()) == 6:
                         collectVic = ' '.join(msg.split()[1:4])
@@ -861,7 +861,7 @@ class BaselineAgent(ArtificialBrain):
                     if condition=='weak':
                         self._rescue = 'together'
                 # If a received message involves team members asking for help with removing obstacles, add their location to memory and come over
-                if msg.startswith('Remove:') and trust > 0:
+                if msg.startswith('Remove:') and self.trustBeliefValues[self._humanName]['willingness']  > 0:
                     # Come over immediately when the agent is not carrying a victim
                     if not self._carrying:
                         # Identify at which location the human needs help
