@@ -567,7 +567,8 @@ class BaselineAgent(ArtificialBrain):
                                         afstand - distance between us: ' + self._distanceHuman,'RescueBot')
                                     self._waiting = True    
                     # Execute move actions to explore the area
-                    return action, {}
+                    if self._phase != Phase.FIND_NEXT_GOAL:
+                        return action, {}
 
                 # Communicate that the agent did not find the target victim in the area while the human previously communicated the victim was located here
                 if self._goalVic in self._foundVictims and self._goalVic not in self._roomVics and self._foundVictimLocs[self._goalVic]['room'] == self._door['room_name']:
