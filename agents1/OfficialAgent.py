@@ -211,10 +211,10 @@ class BaselineAgent(ArtificialBrain):
                         self._goalVic = vic
                         self._goalLoc = remaining[vic]
                         # Rescue together when victim is critical or when the human is weak and the victim is mildly injured
-                        if 'critical' in vic or 'mild' in vic and self._condition=='weak':
+                        if 'critical' in vic:
                             self._rescue = 'together'
                         # Rescue alone if the victim is mildly injured and the human not weak
-                        if 'mild' in vic and self._condition!='weak':
+                        if 'mild' in vic:
                             self._rescue = 'alone'
                         # Plan path to victim because the exact location is known (i.e., the agent found this victim)
                         if 'location' in self._foundVictimLocs[vic].keys():
