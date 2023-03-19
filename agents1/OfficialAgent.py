@@ -240,9 +240,9 @@ class BaselineAgent(ArtificialBrain):
                 if self._remainingZones and len(unsearchedRooms) == 0:
                     self.lied = True
                     # TODO lower trust based on the number of people not found and remove eagerness reward.
-                    self.trustBeliefValues[self._humanName]['competence'] -= self.trust_remove * 2
+                    self.trustBeliefValues[self._humanName]['competence'] -= self.trust_remove * 1.5
                     self.bound_competence()
-                    self.trustBeliefValues[self._humanName]['willingness'] -= self.eagerness_remove * 2
+                    self.trustBeliefValues[self._humanName]['willingness'] -= self.eagerness_remove * 1.5
                     self.bound_willingness()
                     #reset remove
                     self.trust_remove = 0
@@ -354,7 +354,7 @@ class BaselineAgent(ArtificialBrain):
                             self._phase = Phase.FIND_NEXT_GOAL
                             # Emma: here the human told the agen to coninue instead of removing the obstacle, so the eagerness is decreasing
                             print("here the human told the agen to coninue instead of removing the obstacle, so the eagerness is decreasing")
-                            self.trustBeliefValues[self._humanName]['willingness'] -= self.willingness * 3
+                            self.trustBeliefValues[self._humanName]['willingness'] -= self.willingness * 2.5
                             self.bound_willingness()
 
                         # Wait for the human to help removing the obstacle and remove the obstacle together
