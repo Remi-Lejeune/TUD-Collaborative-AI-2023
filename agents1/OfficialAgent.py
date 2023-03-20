@@ -385,79 +385,103 @@ class BaselineAgent(ArtificialBrain):
 
                     if 'class_inheritance' in info and 'ObstacleObject' in info['class_inheritance'] and 'tree' in info['obj_id']:
                         objects.append(info)
-                        # Communicate which obstacle is blocking the entrance
-                        if self._answered == False and not self._remove and not self._waiting:
-                            self._sendMessage('Found tree blocking  ' + str(self._door['room_name']) + '. Please decide whether to "Remove" or "Continue" searching. \n \n \
-                                Important features to consider are: \n safe - victims rescued: ' + str(self._collectedVictims) + '\n explore - areas searched: area ' + str(self._searchedRooms).replace('area ','') + ' \
-                                \n clock - removal time: 10 seconds','RescueBot')
-                            self._waiting = True
-                        # Determine the next area to explore if the human tells the agent not to remove the obstacle
-                        if self.received_messages_content and self.received_messages_content[-1] == 'Continue' and not self._remove:
+                        # When the trust is low in either willingness or competence,
+                        # remove the stone yourself without asking.
+                        if self.trustBeliefValues[self._humanName]['competence'] < CUT_OFF_TRUST_POINT or self.trustBeliefValues[self._humanName]['willingness'] < CUT_OFF_TRUST_POINT:
                             self._answered = True
                             self._waiting = False
-                            # Add area to the to do list
-                            self._tosearch.append(self._door['room_name'])
-                            self._phase = Phase.FIND_NEXT_GOAL
-                        # Remove the obstacle if the human tells the agent to do so
-                        if self.received_messages_content and self.received_messages_content[-1] == 'Remove' or self._remove:
-                            if not self._remove:
-                                self._answered = True
-                                self._waiting = False
-                                self._sendMessage('Removing tree blocking ' + str(self._door['room_name']) + '.','RescueBot')
-                            if self._remove:
-                                self._sendMessage('Removing tree blocking ' + str(self._door['room_name']) + ' because you asked me to.', 'RescueBot')
+                            self._sendMessage('Removing tree blocking ' + str(self._door['room_name']) + '.',
+                                              'RescueBot')
                             self._phase = Phase.ENTER_ROOM
                             self._remove = False
                             return RemoveObject.__name__, {'object_id': info['obj_id']}
-                        # Remain idle untill the human communicates what to do with the identified obstacle
+                        # If the trust is not low, ask the human what to do.
                         else:
-                            return None, {}
+                            # Communicate which obstacle is blocking the entrance
+                            if self._answered == False and not self._remove and not self._waiting:
+                                self._sendMessage('Found tree blocking  ' + str(self._door['room_name']) + '. Please decide whether to "Remove" or "Continue" searching. \n \n \
+                                    Important features to consider are: \n safe - victims rescued: ' + str(self._collectedVictims) + '\n explore - areas searched: area ' + str(self._searchedRooms).replace('area ','') + ' \
+                                    \n clock - removal time: 10 seconds','RescueBot')
+                                self._waiting = True
+                            # Determine the next area to explore if the human tells the agent not to remove the obstacle
+                            if self.received_messages_content and self.received_messages_content[-1] == 'Continue' and not self._remove:
+                                self._answered = True
+                                self._waiting = False
+                                # Add area to the to do list
+                                self._tosearch.append(self._door['room_name'])
+                                self._phase = Phase.FIND_NEXT_GOAL
+                            # Remove the obstacle if the human tells the agent to do so
+                            if self.received_messages_content and self.received_messages_content[-1] == 'Remove' or self._remove:
+                                if not self._remove:
+                                    self._answered = True
+                                    self._waiting = False
+                                    self._sendMessage('Removing tree blocking ' + str(self._door['room_name']) + '.','RescueBot')
+                                if self._remove:
+                                    self._sendMessage('Removing tree blocking ' + str(self._door['room_name']) + ' because you asked me to.', 'RescueBot')
+                                self._phase = Phase.ENTER_ROOM
+                                self._remove = False
+                                return RemoveObject.__name__, {'object_id': info['obj_id']}
+                            # Remain idle untill the human communicates what to do with the identified obstacle
+                            else:
+                                return None, {}
 
                     if 'class_inheritance' in info and 'ObstacleObject' in info['class_inheritance'] and 'stone' in info['obj_id']:
                         objects.append(info)
-                        # Communicate which obstacle is blocking the entrance
-                        if self._answered == False and not self._remove and not self._waiting:
-                            self._sendMessage('Found stones blocking  ' + str(self._door['room_name']) + '. Please decide whether to "Remove together", "Remove alone", or "Continue" searching. \n \n \
-                                Important features to consider are: \n safe - victims rescued: ' + str(self._collectedVictims) + ' \n explore - areas searched: area ' + str(self._searchedRooms).replace('area','') + ' \
-                                \n clock - removal time together: 3 seconds \n afstand - distance between us: ' + self._distanceHuman + '\n clock - removal time alone: 20 seconds','RescueBot')
-                            self._waiting = True
-                        # Determine the next area to explore if the human tells the agent not to remove the obstacle          
-                        if self.received_messages_content and self.received_messages_content[-1] == 'Continue' and not self._remove:
+                        # When the trust is low in either willingness or competence,
+                        # remove the stone yourself without asking.
+                        if self.trustBeliefValues[self._humanName]['competence'] < CUT_OFF_TRUST_POINT or self.trustBeliefValues[self._humanName]['willingness'] < CUT_OFF_TRUST_POINT:
                             self._answered = True
                             self._waiting = False
-                            # Add area to the to do list
-                            self._tosearch.append(self._door['room_name'])
-                            self._phase = Phase.FIND_NEXT_GOAL
-                        # Remove the obstacle alone if the human decides so
-                        if self.received_messages_content and self.received_messages_content[-1] == 'Remove alone' and not self._remove:
-                            self._answered = True
-                            self._waiting = False
-                            self._sendMessage('Removing stones blocking ' + str(self._door['room_name']) + '.','RescueBot')
+                            self._sendMessage('Removing stones blocking ' + str(self._door['room_name']) + '.',
+                                              'RescueBot')
                             self._phase = Phase.ENTER_ROOM
                             self._remove = False
                             return RemoveObject.__name__, {'object_id': info['obj_id']}
-                        # Remove the obstacle together if the human decides so
-                        if self.received_messages_content and self.received_messages_content[-1] == 'Remove together' or self._remove:
-                            if not self._remove:
-                                self._answered = True
-                            # Tell the human to come over and be idle untill human arrives
-                            if not state[{'is_human_agent': True}]:
-                                self._sendMessage('Please come to ' + str(self._door['room_name']) + ' to remove stones together.','RescueBot')
-                                return None, {}
-                            # Tell the human to remove the obstacle when he/she arrives
-                            if state[{'is_human_agent': True}]:
-                                # Emma: here the human showed up for removing a stone, so the eagerness and trust must increase.
-                                # print("here the human showed up for removing a stone, so the eagerness and trust must increase.")
-                                # self.trustBeliefValues[self._humanName]['willingness'] += self.willingness
-                                # self.bound_willingness()
-                                # self.trustBeliefValues[self._humanName]['competence'] += (self.trust * 2)
-                                # self.bound_competence()
-
-                                self._sendMessage('Lets remove stones blocking ' + str(self._door['room_name']) + '!','RescueBot')
-                                return None, {}
-                        # Remain idle until the human communicates what to do with the identified obstacle
+                        # If the trust is not low, ask the human what to do.
                         else:
-                            return None, {}
+                            # Communicate which obstacle is blocking the entrance
+                            if self._answered == False and not self._remove and not self._waiting:
+                                self._sendMessage('Found stones blocking  ' + str(self._door['room_name']) + '. Please decide whether to "Remove together", "Remove alone", or "Continue" searching. \n \n \
+                                    Important features to consider are: \n safe - victims rescued: ' + str(self._collectedVictims) + ' \n explore - areas searched: area ' + str(self._searchedRooms).replace('area','') + ' \
+                                    \n clock - removal time together: 3 seconds \n afstand - distance between us: ' + self._distanceHuman + '\n clock - removal time alone: 20 seconds','RescueBot')
+                                self._waiting = True
+                            # Determine the next area to explore if the human tells the agent not to remove the obstacle
+                            if self.received_messages_content and self.received_messages_content[-1] == 'Continue' and not self._remove:
+                                self._answered = True
+                                self._waiting = False
+                                # Add area to the to do list
+                                self._tosearch.append(self._door['room_name'])
+                                self._phase = Phase.FIND_NEXT_GOAL
+                            # Remove the obstacle alone if the human decides so
+                            if self.received_messages_content and self.received_messages_content[-1] == 'Remove alone' and not self._remove:
+                                self._answered = True
+                                self._waiting = False
+                                self._sendMessage('Removing stones blocking ' + str(self._door['room_name']) + '.','RescueBot')
+                                self._phase = Phase.ENTER_ROOM
+                                self._remove = False
+                                return RemoveObject.__name__, {'object_id': info['obj_id']}
+                            # Remove the obstacle together if the human decides so
+                            if self.received_messages_content and self.received_messages_content[-1] == 'Remove together' or self._remove:
+                                if not self._remove:
+                                    self._answered = True
+                                # Tell the human to come over and be idle untill human arrives
+                                if not state[{'is_human_agent': True}]:
+                                    self._sendMessage('Please come to ' + str(self._door['room_name']) + ' to remove stones together.','RescueBot')
+                                    return None, {}
+                                # Tell the human to remove the obstacle when he/she arrives
+                                if state[{'is_human_agent': True}]:
+                                    # Emma: here the human showed up for removing a stone, so the eagerness and trust must increase.
+                                    # print("here the human showed up for removing a stone, so the eagerness and trust must increase.")
+                                    # self.trustBeliefValues[self._humanName]['willingness'] += self.willingness
+                                    # self.bound_willingness()
+                                    # self.trustBeliefValues[self._humanName]['competence'] += (self.trust * 2)
+                                    # self.bound_competence()
+
+                                    self._sendMessage('Lets remove stones blocking ' + str(self._door['room_name']) + '!','RescueBot')
+                                    return None, {}
+                            # Remain idle until the human communicates what to do with the identified obstacle
+                            else:
+                                return None, {}
                 # If no obstacles are blocking the entrance, enter the area
                 if len(objects) == 0:
                     self._answered = False
