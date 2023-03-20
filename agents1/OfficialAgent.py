@@ -157,7 +157,7 @@ class BaselineAgent(ArtificialBrain):
             if Phase.INTRO == self._phase:
                 # Send introduction message
                 # TODO: Remove debug print over here
-                self._sendMessage(f'DEBUG: THis is the TrustActionBot. current trust values are: {self.trustBeliefValues}! ','RescueBot')
+                # self._sendMessage(f'DEBUG: THis is the TrustActionBot. current trust values are: {self.trustBeliefValues}! ','RescueBot')
                 # Wait untill the human starts moving before going to the next phase, otherwise remain idle
                 if not state[{'is_human_agent': True}]:
                     self._phase = Phase.FIND_NEXT_GOAL
@@ -239,7 +239,8 @@ class BaselineAgent(ArtificialBrain):
                 # If all areas have been searched but the task is not finished, start searching areas again
                 if self._remainingZones and len(unsearchedRooms) == 0:
                     self.lied = True
-                    # TODO lower trust based on the number of people not found and remove eagerness reward.
+                    # Since the human lied/was lazy about searching/collecting victims
+                    # Here we remove 1.5 times the trust and eagerness we gave when the human communicated their task
                     self.trustBeliefValues[self._humanName]['competence'] -= self.trust_remove * 1.5
                     self.bound_competence()
                     self.trustBeliefValues[self._humanName]['willingness'] -= self.eagerness_remove * 1.5
@@ -598,8 +599,8 @@ class BaselineAgent(ArtificialBrain):
                 if self._goalVic in self._foundVictims and self._goalVic not in self._roomVics and self._foundVictimLocs[self._goalVic]['room'] == self._door['room_name']:
                     self._sendMessage(self._goalVic + ' not present in ' + str(self._door['room_name']) + ' because I searched the whole area without finding ' + self._goalVic + '.','RescueBot')
                     # Remove the victim location from memory
-                    #TODO reduce trust
 
+                    # If the human lied about the victim location, decrease competence
                     self.trustBeliefValues[self._humanName]['competence'] -= self.trust * 4
                     self.bound_competence()
 
@@ -808,8 +809,9 @@ class BaselineAgent(ArtificialBrain):
                 if msg.startswith("Search:") and self.trustBeliefValues[self._humanName]['willingness'] > -0.25:
                     area = 'area ' + msg.split()[-1]
                     if area not in self._searchedRooms:
-                        #TODO add search reward here
                         self._searchedRooms.append(area)
+
+                        # Add eagerness for searching
                         self.eagerness_remove += self.willingness
                         self.trustBeliefValues[self._humanName]['willingness'] += self.willingness
                         self.bound_willingness()
@@ -826,15 +828,17 @@ class BaselineAgent(ArtificialBrain):
                         self._searchedRooms.append(loc)
                         if 'mild' in foundVic:
                             print("adding eagerness for mild victim for search room")
+
+                            # Add eagerness for searching
                             self.eagerness_remove += self.willingness
                             self.trustBeliefValues[self._humanName]['willingness'] += self.willingness
                             self.bound_willingness()
                     # Add the victim and its location to memory
                     if foundVic not in self._foundVictims:
                         self._foundVictims.append(foundVic)
-                        #TODO maybe dont add eagerness if red victim since it is added later if they re not lying
                         if 'mild' in foundVic:
-                            print("adding eagerness for mild victim")
+
+                            # Add eagerness for finding mild victim
                             self.eagerness_remove += self.willingness
                             self.trustBeliefValues[self._humanName]['willingness'] += self.willingness
                             self.bound_willingness()
